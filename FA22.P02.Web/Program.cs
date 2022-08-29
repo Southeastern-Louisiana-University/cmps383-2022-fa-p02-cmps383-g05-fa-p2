@@ -16,31 +16,27 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/products", () =>
 {
-    throw new Exception("remove me");
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateTime.Now.AddDays(index),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+
+}
+)
+.WithName("GetAllProducts");
+
+new ProductDto(1, "DillPickle", "Reg ol' pickle", 1.99M);
+new ProductDto(2, "DillyPickle", "A very Dilly Pickle", 2.99M);
+new ProductDto(3, "DillPickley", "A very Pickley Dill", 100.99M);
 
 app.Run();
 
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
+internal record ProductDto(int productId, string productName, string? Description, decimal productPrice)
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public int Id = productId;
+    public string Name = productName;
+    public string? Desc = Description;
+    public decimal Price = productPrice;
+
 }
 
 //see: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0

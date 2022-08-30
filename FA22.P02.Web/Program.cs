@@ -22,22 +22,21 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/productsById", async (int id, ProductDb db) =>
+
+
+app.MapGet("/api/productsById", async (int id, ProductDb db) =>
 {
     if (await db.Products.FindAsync(id) is Product find)
     {
         return Results.Ok(find);
     }
     return Results.NotFound("this is not the id you are looking for  - Obiwan Vidacovich");
-});
-    
-    
-    
-;
+}).WithName("Find a Specific Product");
 
-app.MapGet("/products", async (ProductDb db) =>
+
+app.MapGet("/api/products", async (ProductDb db) =>
     await db.Products.ToListAsync())
-    .WithName("GetAllProducts");
+    .WithName("Get All Products");
 
 app.MapPost("/api/addProduct", async (Product prod, ProductDb db) =>
 {
@@ -45,9 +44,9 @@ app.MapPost("/api/addProduct", async (Product prod, ProductDb db) =>
     await db.SaveChangesAsync();
 
     return Results.Created($"/products/{prod.Id}", prod);
-});
+}).WithName("Create New Product");
 
-app.MapDelete("/removeProduct", async (int id, ProductDb db) =>
+app.MapDelete("/api/removeProduct", async (int id, ProductDb db) =>
 {
     if (await db.Products.FindAsync(id) is Product remove)
     {
@@ -55,15 +54,16 @@ app.MapDelete("/removeProduct", async (int id, ProductDb db) =>
         await db.SaveChangesAsync();
         return Results.Ok(remove);
     }
-    return Results.NotFound("this is not the id you are looking for  - Obiwan Vidacovich");
-});
-
+    return Results.BadRequest("this is not the id you are looking for  - Obiwan Vidacovich");
+}).WithName("Delete Product");
 
 
 app.Run();
 
+
 class Product
 {
+
     public int Id { get; set; }
     public string Name { get; set; }
     

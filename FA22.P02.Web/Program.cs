@@ -22,12 +22,24 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.MapGet("/productsById", async (int id, ProductDb db) =>
+{
+    if (await db.Products.FindAsync(id) is Product find)
+    {
+        return Results.Ok(find);
+    }
+    return Results.NotFound("this is not the id you are looking for  - Obiwan Vidacovich");
+});
+    
+    
+    
+;
 
 app.MapGet("/products", async (ProductDb db) =>
     await db.Products.ToListAsync())
     .WithName("GetAllProducts");
 
-app.MapPost("/addProduct", async (Product prod, ProductDb db) =>
+app.MapPost("/api/addProduct", async (Product prod, ProductDb db) =>
 {
     db.Products.Add(prod);
     await db.SaveChangesAsync();
@@ -35,15 +47,18 @@ app.MapPost("/addProduct", async (Product prod, ProductDb db) =>
     return Results.Created($"/products/{prod.Id}", prod);
 });
 
-/*app.MapDelete("/removeProduct", async (Product prod, ProductDb db) =>
+app.MapDelete("/removeProduct", async (int id, ProductDb db) =>
 {
-    db.Products.Remove(prod);
-    await db.SaveChangesAsync();
+    if (await db.Products.FindAsync(id) is Product remove)
+    {
+        db.Products.Remove(remove);
+        await db.SaveChangesAsync();
+        return Results.Ok(remove);
+    }
+    return Results.NotFound("this is not the id you are looking for  - Obiwan Vidacovich");
+});
 
-    return Results.Ok;
-}*/
 
-//
 
 app.Run();
 
@@ -54,7 +69,7 @@ class Product
     
     public string? Description { get; set; }
 
-    public decimal Price { get; set; }
+    public decimal Price { get; set;  }
 }
 
 class ProductDb : DbContext
@@ -64,6 +79,7 @@ class ProductDb : DbContext
 
     public DbSet<Product> Products => Set<Product>();
 }
+
 //see: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0
 // Hi 383 - this is added so we can test our web project automatically. More on that later
 public partial class Program { }

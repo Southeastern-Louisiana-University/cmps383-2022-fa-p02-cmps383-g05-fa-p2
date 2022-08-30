@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ProductDb>(opt => opt.UseInMemoryDatabase("ProductList"));
@@ -40,10 +40,14 @@ app.MapGet("/api/products", async (ProductDb db) =>
 
 app.MapPost("/api/addProduct", async (Product prod, ProductDb db) =>
 {
-    db.Products.Add(prod);
-    await db.SaveChangesAsync();
+    if (((prod.Id > 0) && (prod.Name != null) && (prod.Description != null) && (prod.Price > 0M)) && !(await db.Products.FindAsync(prod.Id) is Product loose))
+    {
+        db.Products.Add(prod);
+        await db.SaveChangesAsync();
 
-    return Results.Created($"/products/{prod.Id}", prod);
+        return Results.Created($"/products/{prod.Id}", prod);
+    }
+    return Results.BadRequest();
 }).WithName("Create New Product");
 
 app.MapDelete("/api/removeProduct", async (int id, ProductDb db) =>
@@ -63,12 +67,13 @@ app.Run();
 
 class Product
 {
-
+    [Required]
     public int Id { get; set; }
+    [Required]
     public string Name { get; set; }
-    
-    public string? Description { get; set; }
-
+    [Required]
+    public string Description { get; set; }
+    [Required]
     public decimal Price { get; set;  }
 }
 

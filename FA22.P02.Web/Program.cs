@@ -19,7 +19,7 @@ app.UseHttpsRedirection();
 
 app.MapGet("/products", () =>
 {
-
+    var products = Enumerable.Range(1, 2)
 }
 )
 .WithName("GetAllProducts");

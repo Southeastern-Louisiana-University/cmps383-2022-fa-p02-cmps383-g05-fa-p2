@@ -129,7 +129,7 @@ app.MapPost("/api/products", async (Product prod, ProductDb db) =>
     db.Products.Add(prod);
     await db.SaveChangesAsync();
 
-    return Results.Created($"/products/{prod.Id}", prod);
+    return Results.Created($"http://localhost/api/products/{prod.Id}", prod);
 }).WithName("Create New Product");
 
 app.MapDelete("/api/products/{id}", async (int id, ProductDb db) =>

@@ -72,13 +72,17 @@ app.MapPost("/api/products/update", async (Product idea, ProductDb db) =>
     return Results.BadRequest("this is not the id you are looking for  - Obiwan Vidacovich");
 }).WithName("Update");
 
-app.MapPut("/api/products/{id}", async (string NameofProduct, Product pro, ProductDb db) =>
+app.MapPut("/api/products/{id}", async (int NameofProduct, Product pro, ProductDb db) =>
 {
     var todo = await db.Products.FindAsync(NameofProduct);
 
     if (todo is null) return Results.NotFound();
 
-    if ((pro.Id > 0)&&(pro.Name.Length < 120) && (pro.Description != null) && (pro.Price != null) && (pro.Price > 0) && (pro.Name != null) && (pro.Name != ""))
+    
+
+    if ((pro.Id > 0) && (!(await db.Products.FindAsync(pro.Id) is Product looky)) &&
+    (pro.Name.Length < 120) && (pro.Description != null) && (pro.Price != null) && 
+    (pro.Price > 0) && (pro.Name != null) && (pro.Name != ""))
     {
         todo.Id = pro.Id;
         todo.Name = pro.Name;

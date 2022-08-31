@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ProductDb>(opt => opt.UseInMemoryDatabase("ProductList"));
@@ -21,6 +23,30 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+
+Product Sayan = new Product
+{
+    Id = 1,
+    Name = "Yoo",
+    Description = "Loo",
+    Price = 1M
+};
+Product Saya = new Product
+{
+    Id = 2,
+    Name = "Yoow",
+    Description = "Loo",
+    Price = 1M
+};
+Product Saan = new Product
+{
+    Id = 3,
+    Name = "Yoao",
+    Description = "Loo",
+    Price = 1M
+};
+
 
 
 
@@ -48,8 +74,24 @@ app.MapPost("/api/Update", async (Product idea, ProductDb db) =>
 
 
 app.MapGet("/api/products", async (ProductDb db) =>
-    await db.Products.ToListAsync())
-    .WithName("Get All Products");
+{ 
+    if(!(await db.Products.FindAsync(Sayan.Id) is Product Nope))
+    {
+        db.Products.Add(Sayan);
+        await db.SaveChangesAsync();
+        db.Products.Add(Saan);
+        await db.SaveChangesAsync();
+        db.Products.Add(Saya);
+        await db.SaveChangesAsync();
+        
+        return await db.Products.ToListAsync();
+    }else
+    {
+        return await db.Products.ToListAsync();
+    }
+    
+    
+}).WithName("Get All Products");
 
 app.MapPost("/api/addProduct", async (Product prod, ProductDb db) =>
 {
@@ -75,10 +117,62 @@ app.MapDelete("/api/removeProduct", async (int id, ProductDb db) =>
 }).WithName("Delete Product");
 
 
+Thing1("hey");
+
 app.Run();
 
+void Thing1(string number)
+{
+    using (var context = new ProductDb(TestBootstrapper.GetInMemoryDbContextOptions("testDb")))
+    {
 
-class Product
+        Product Sayan = new Product
+        {
+            Id = 1,
+            Name = "Yoo",
+            Description = "Loo",
+            Price = 1M
+        };
+        Product Saya = new Product
+        {
+            Id = 2,
+            Name = "Yoow",
+            Description = "Loo",
+            Price = 1M
+        };
+        Product Saan = new Product
+        {
+            Id = 3,
+            Name = "Yoao",
+            Description = "Loo",
+            Price = 1M
+        };
+        context.Products.Add(Sayan);
+        context.Products.Add(Saya);
+        context.Products.Add(Saan);
+    }
+}
+
+
+
+public class TestBootstrapper
+{
+    /// <summary>
+    /// Create an instance of in memory database context for testing.
+    /// Use the returned DbContextOptions to initialize DbContext.
+    /// </summary>
+    /// <param name="dbName"></param>
+    /// <returns></returns>
+    public static DbContextOptions<DbContext> GetInMemoryDbContextOptions(string dbName = "Test_DB")
+    {
+        var options = new DbContextOptionsBuilder<DbContext>()
+            .UseInMemoryDatabase(databaseName: dbName)
+            .Options;
+
+        return options;
+    }
+}
+public class Product
 {
     [Required]
     public int Id { get; set; }
@@ -90,11 +184,16 @@ class Product
     public decimal Price { get; set;  }
 }
 
-class ProductDb : DbContext
+public class ProductDb : DbContext
 {
-    public ProductDb(DbContextOptions<ProductDb> options)
+    /*public ProductDb(DbContextOptions<ProductDb> options)
     : base(options) { }
+    */
+    public ProductDb(DbContextOptions options) : base(options)
+    {
+    }
 
+    //public DbSet<Product> Products { get; set; }
     public DbSet<Product> Products => Set<Product>();
 }
 

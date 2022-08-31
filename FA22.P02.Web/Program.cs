@@ -1,5 +1,13 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
 
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<ProductDb>(opt => opt.UseInMemoryDatabase("ProductList"));
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -16,31 +24,169 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+
+Product Sayan = new Product
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    Id = 1,
+    Name = "Yoo",
+    Description = "Loo",
+    Price = 1M
+};
+Product Saya = new Product
+{
+    Id = 2,
+    Name = "Yoow",
+    Description = "Loo",
+    Price = 1M
+};
+Product Saan = new Product
+{
+    Id = 3,
+    Name = "Yoao",
+    Description = "Loo",
+    Price = 1M
 };
 
-app.MapGet("/weatherforecast", () =>
+
+app.MapGet("/api/products", async (ProductDb db) =>
+{ 
+    if(!(await db.Products.FindAsync(Sayan.Id) is Product Nope))
+    {
+        db.Products.Add(Sayan);
+        await db.SaveChangesAsync();
+        db.Products.Add(Saan);
+        await db.SaveChangesAsync();
+        db.Products.Add(Saya);
+        await db.SaveChangesAsync();
+        
+        return await db.Products.ToListAsync();
+    }else
+    {
+        return await db.Products.ToListAsync();
+    }
+    
+    
+}).WithName("Get All Products");
+
+app.MapGet("/api/products/{id}", async (int id, ProductDb db) =>
 {
-    throw new Exception("remove me");
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateTime.Now.AddDays(index),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    if (await db.Products.FindAsync(id) is Product find)
+    {
+        return Results.Ok(find);
+    }
+    return Results.NotFound("this is not the id you are looking for  - Obiwan Vidacovich");
+}).WithName("Find a Specific Product");
+
+app.MapPost("/api/products", async (Product prod, ProductDb db) =>
+{
+    if(prod.Name == null)
+    {
+        return Results.BadRequest();
+    }
+    if(prod.Name.Length > 120 || prod.Name == "")
+    {
+        return Results.BadRequest();
+    }
+    if (prod.Price == null || prod.Description == null || !(prod.Price > 0))
+    {
+        return Results.BadRequest();
+    }
+
+    db.Products.Add(prod);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"http://localhost/api/products/{prod.Id}", prod);
+}).WithName("Create New Product");
+
+app.MapPut("/api/products/{id}", async (int id, Product pro, ProductDb db) =>
+{
+    var todo = await db.Products.FindAsync(id);
+    if (todo is null) return Results.NotFound();
+    if (!(await db.Products.FindAsync(id) is Product a) || !(await db.Products.FindAsync(pro.Id) is Product b)) 
+    {
+        return Results.NotFound();
+    }
+    if (pro.Name == null)
+    {
+        return Results.BadRequest();
+    }
+    if (pro.Name.Length > 120 || pro.Name == "")
+    {
+        return Results.BadRequest();
+    }
+    
+    if (pro.Description == null || !(pro.Price > 0) || pro.Price == null)
+    {
+        return Results.BadRequest();
+    }
+    todo.Id = pro.Id;
+    todo.Name = pro.Name;
+    todo.Description = pro.Description;
+    todo.Price = pro.Price;
+    await db.SaveChangesAsync();
+    return Results.Ok(todo);
+    
+});
+
+app.MapDelete("/api/products/{id}", async (int id, ProductDb db) =>
+{
+    if (!(await db.Products.FindAsync(id) is Product remove))
+    {
+        return Results.NotFound();
+    }
+
+    db.Products.Remove(remove);
+    await db.SaveChangesAsync();
+    return Results.Ok(remove);
+    return Results.BadRequest("this is not the id you are looking for  - Obiwan Vidacovich");
+}).WithName("Delete Product");
+
 
 app.Run();
 
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
+
+
+
+public class TestBootstrapper
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    /// <summary>
+    /// Create an instance of in memory database context for testing.
+    /// Use the returned DbContextOptions to initialize DbContext.
+    /// </summary>
+    /// <param name="dbName"></param>
+    /// <returns></returns>
+    public static DbContextOptions<DbContext> GetInMemoryDbContextOptions(string dbName = "Test_DB")
+    {
+        var options = new DbContextOptionsBuilder<DbContext>()
+            .UseInMemoryDatabase(databaseName: dbName)
+            .Options;
+
+        return options;
+    }
+}
+public class Product
+{
+    [Required]
+    public int Id { get; set; }
+    [Required]
+    public string Name { get; set; }
+    [Required]
+    public string Description { get; set; }
+    [Required]
+    public decimal Price { get; set;  }
+}
+
+public class ProductDb : DbContext
+{
+    /*public ProductDb(DbContextOptions<ProductDb> options)
+    : base(options) { }
+    */
+    public ProductDb(DbContextOptions options) : base(options)
+    {
+    }
+
+    //public DbSet<Product> Products { get; set; }
+    public DbSet<Product> Products => Set<Product>();
 }
 
 //see: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0

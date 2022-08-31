@@ -50,7 +50,7 @@ Product Saan = new Product
 
 
 
-app.MapGet("/api/productsById", async (int id, ProductDb db) =>
+app.MapGet("/api/products/{id}", async (int id, ProductDb db) =>
 {
     if (await db.Products.FindAsync(id) is Product find)
     {
@@ -59,7 +59,7 @@ app.MapGet("/api/productsById", async (int id, ProductDb db) =>
     return Results.NotFound("this is not the id you are looking for  - Obiwan Vidacovich");
 }).WithName("Find a Specific Product");
 
-app.MapPost("/api/Update", async (Product idea, ProductDb db) =>
+app.MapPost("/api/products/update", async (Product idea, ProductDb db) =>
 {
     if (await db.Products.FindAsync(idea.Id) is Product remove)
     {
@@ -93,7 +93,7 @@ app.MapGet("/api/products", async (ProductDb db) =>
     
 }).WithName("Get All Products");
 
-app.MapPost("/api/addProduct", async (Product prod, ProductDb db) =>
+app.MapPost("/api/products/post", async (Product prod, ProductDb db) =>
 {
     if (((prod.Id > 0) && (prod.Name != null) && (prod.Description != null) && (prod.Price > 0M)) && !(await db.Products.FindAsync(prod.Id) is Product loose))
     {
@@ -105,7 +105,7 @@ app.MapPost("/api/addProduct", async (Product prod, ProductDb db) =>
     return Results.BadRequest();
 }).WithName("Create New Product");
 
-app.MapDelete("/api/removeProduct", async (int id, ProductDb db) =>
+app.MapDelete("/api/products/remove", async (int id, ProductDb db) =>
 {
     if (await db.Products.FindAsync(id) is Product remove)
     {
@@ -117,41 +117,8 @@ app.MapDelete("/api/removeProduct", async (int id, ProductDb db) =>
 }).WithName("Delete Product");
 
 
-Thing1("hey");
-
 app.Run();
 
-void Thing1(string number)
-{
-    using (var context = new ProductDb(TestBootstrapper.GetInMemoryDbContextOptions("testDb")))
-    {
-
-        Product Sayan = new Product
-        {
-            Id = 1,
-            Name = "Yoo",
-            Description = "Loo",
-            Price = 1M
-        };
-        Product Saya = new Product
-        {
-            Id = 2,
-            Name = "Yoow",
-            Description = "Loo",
-            Price = 1M
-        };
-        Product Saan = new Product
-        {
-            Id = 3,
-            Name = "Yoao",
-            Description = "Loo",
-            Price = 1M
-        };
-        context.Products.Add(Sayan);
-        context.Products.Add(Saya);
-        context.Products.Add(Saan);
-    }
-}
 
 
 

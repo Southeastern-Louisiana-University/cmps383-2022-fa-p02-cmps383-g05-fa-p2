@@ -78,10 +78,12 @@ app.MapPut("/api/products/{id}", async (int NameofProduct, Product pro, ProductD
 
     if (todo is null) return Results.NotFound();
 
-    
+    if ((!(await db.Products.FindAsync(pro.Id) is Product looky)))
+    {
+        return Results.NotFound();
+    }
 
-    if ((pro.Id > 0) && (!(await db.Products.FindAsync(pro.Id) is Product looky)) &&
-    (pro.Name.Length < 120) && (pro.Description != null) && (pro.Price != null) && 
+    if ((pro.Id > 0) && (pro.Name.Length < 120) && (pro.Description != null) && (pro.Price != null) && 
     (pro.Price > 0) && (pro.Name != null) && (pro.Name != ""))
     {
         todo.Id = pro.Id;

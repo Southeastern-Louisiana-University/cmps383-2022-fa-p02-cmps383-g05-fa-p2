@@ -48,7 +48,25 @@ Product Saan = new Product
 };
 
 
-
+app.MapGet("/api/products", async (ProductDb db) =>
+{ 
+    if(!(await db.Products.FindAsync(Sayan.Id) is Product Nope))
+    {
+        db.Products.Add(Sayan);
+        await db.SaveChangesAsync();
+        db.Products.Add(Saan);
+        await db.SaveChangesAsync();
+        db.Products.Add(Saya);
+        await db.SaveChangesAsync();
+        
+        return await db.Products.ToListAsync();
+    }else
+    {
+        return await db.Products.ToListAsync();
+    }
+    
+    
+}).WithName("Get All Products");
 
 app.MapGet("/api/products/{id}", async (int id, ProductDb db) =>
 {
@@ -59,6 +77,26 @@ app.MapGet("/api/products/{id}", async (int id, ProductDb db) =>
     return Results.NotFound("this is not the id you are looking for  - Obiwan Vidacovich");
 }).WithName("Find a Specific Product");
 
+app.MapPost("/api/products", async (Product prod, ProductDb db) =>
+{
+    if(prod.Name == null)
+    {
+        return Results.BadRequest();
+    }
+    if(prod.Name.Length > 120 || prod.Name == "")
+    {
+        return Results.BadRequest();
+    }
+    if (prod.Price == null || prod.Description == null || !(prod.Price > 0))
+    {
+        return Results.BadRequest();
+    }
+
+    db.Products.Add(prod);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"http://localhost/api/products/{prod.Id}", prod);
+}).WithName("Create New Product");
 
 app.MapPut("/api/products/{id}", async (int id, Product pro, ProductDb db) =>
 {
@@ -89,48 +127,6 @@ app.MapPut("/api/products/{id}", async (int id, Product pro, ProductDb db) =>
     return Results.Ok(todo);
     
 });
-
-
-app.MapGet("/api/products", async (ProductDb db) =>
-{ 
-    if(!(await db.Products.FindAsync(Sayan.Id) is Product Nope))
-    {
-        db.Products.Add(Sayan);
-        await db.SaveChangesAsync();
-        db.Products.Add(Saan);
-        await db.SaveChangesAsync();
-        db.Products.Add(Saya);
-        await db.SaveChangesAsync();
-        
-        return await db.Products.ToListAsync();
-    }else
-    {
-        return await db.Products.ToListAsync();
-    }
-    
-    
-}).WithName("Get All Products");
-
-app.MapPost("/api/products", async (Product prod, ProductDb db) =>
-{
-    if(prod.Name == null)
-    {
-        return Results.BadRequest();
-    }
-    if(prod.Name.Length > 120 || prod.Name == "")
-    {
-        return Results.BadRequest();
-    }
-    if (prod.Price == null || prod.Description == null || !(prod.Price > 0))
-    {
-        return Results.BadRequest();
-    }
-
-    db.Products.Add(prod);
-    await db.SaveChangesAsync();
-
-    return Results.Created($"http://localhost/api/products/{prod.Id}", prod);
-}).WithName("Create New Product");
 
 app.MapDelete("/api/products/{id}", async (int id, ProductDb db) =>
 {

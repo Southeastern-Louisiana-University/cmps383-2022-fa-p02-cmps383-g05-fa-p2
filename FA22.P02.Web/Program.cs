@@ -72,9 +72,9 @@ app.MapPost("/api/products/update", async (Product idea, ProductDb db) =>
     return Results.BadRequest("this is not the id you are looking for  - Obiwan Vidacovich");
 }).WithName("Update");
 
-app.MapPut("/api/products/{id}", async (string id, Product pro, ProductDb db) =>
+app.MapPut("/api/products/{id}", async (string NameofProduct, Product pro, ProductDb db) =>
 {
-    var todo = await db.Products.FindAsync(id);
+    var todo = await db.Products.FindAsync(NameofProduct);
 
     if (todo is null) return Results.NotFound();
 
@@ -162,7 +162,6 @@ public class Product
     [Required]
     public int Id { get; set; }
     [Required]
-    [Key]
     public string Name { get; set; }
     [Required]
     public string Description { get; set; }

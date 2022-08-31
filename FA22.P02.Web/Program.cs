@@ -78,7 +78,7 @@ app.MapPut("/api/products/{id}", async (int id, Product pro, ProductDb db) =>
 
     if (todo is null) return Results.NotFound();
 
-    if ((todo.Name.Length < 120) && (todo.Description != null) && (todo.Price != null) && (todo.Price > 0))
+    if ((todo.Name.Length < 120) && (todo.Description != null) && (todo.Price != null) && (todo.Price > 0) && (todo.Name != null))
     {
         todo.Name = pro.Name;
         todo.Description = pro.Description;

@@ -80,15 +80,15 @@ app.MapPut("/api/products/{id}", async (int id, Product pro, ProductDb db) =>
     {
         return Results.NotFound();
     }
-    if (pro.Name != null)
+    if (pro.Name == null)
     {
-        if(pro.Name.Length > 120 || pro.Name == "")
-        {
-return Results.BadRequest();
-        }
-        
-        
+        return Results.BadRequest();
     }
+    if (pro.Name.Length > 120 || pro.Name == "")
+    {
+        return Results.BadRequest();
+    }
+    
     if (pro.Description == null || !(pro.Price > 0) || pro.Price == null)
     {
         return Results.BadRequest();

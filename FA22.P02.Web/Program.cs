@@ -72,28 +72,29 @@ app.MapPost("/api/products/update", async (Product idea, ProductDb db) =>
     return Results.BadRequest("this is not the id you are looking for  - Obiwan Vidacovich");
 }).WithName("Update");
 
-app.MapPut("/api/products/{id}", async (int NameofProduct, Product pro, ProductDb db) =>
+app.MapPut("/api/products/{id}", async (int id, Product pro, ProductDb db) =>
 {
-    var todo = await db.Products.FindAsync(NameofProduct);
-
+    var todo = await db.Products.FindAsync(id);
     if (todo is null) return Results.NotFound();
-
-    if ((!(await db.Products.FindAsync(pro.Id) is Product looky)))
+    if (!(await db.Products.FindAsync(id) is Product a) || !(await db.Products.FindAsync(pro.Id) is Product b)) 
     {
         return Results.NotFound();
     }
-
-    if ((pro.Id > 0) && (pro.Name.Length < 120) && (pro.Description != null) && (pro.Price != null) && 
-    (pro.Price > 0) && (pro.Name != null) && (pro.Name != ""))
+    if (pro.Name.Length > 120 || pro.Name == null)
     {
-        todo.Id = pro.Id;
-        todo.Name = pro.Name;
-        todo.Description = pro.Description;
-        todo.Price = pro.Price;
-        await db.SaveChangesAsync();
-        return Results.Ok(todo);
+        return Results.BadRequest();
     }
-    return Results.BadRequest();
+    if (pro.Description == null || !(pro.Price > 0) || pro.Price == null)
+    {
+        return Results.BadRequest();
+    }
+    todo.Id = pro.Id;
+    todo.Name = pro.Name;
+    todo.Description = pro.Description;
+    todo.Price = pro.Price;
+    await db.SaveChangesAsync();
+    return Results.Ok(todo);
+    
 });
 
 

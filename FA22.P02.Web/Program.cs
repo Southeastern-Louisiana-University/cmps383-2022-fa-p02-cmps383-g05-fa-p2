@@ -72,7 +72,7 @@ app.MapPost("/api/products/update", async (Product idea, ProductDb db) =>
     return Results.BadRequest("this is not the id you are looking for  - Obiwan Vidacovich");
 }).WithName("Update");
 
-app.MapPut("/api/products/{id}", async (int id, Product pro, ProductDb db) =>
+app.MapPut("/api/products/{id}", async (string id, Product pro, ProductDb db) =>
 {
     var todo = await db.Products.FindAsync(id);
 

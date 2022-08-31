@@ -134,12 +134,14 @@ app.MapPost("/api/products", async (Product prod, ProductDb db) =>
 
 app.MapDelete("/api/products/{id}", async (int id, ProductDb db) =>
 {
-    if (await db.Products.FindAsync(id) is Product remove)
+    if (!(await db.Products.FindAsync(id) is Product remove))
     {
-        db.Products.Remove(remove);
-        await db.SaveChangesAsync();
-        return Results.Ok(remove);
+        return Results.NotFound();
     }
+
+    db.Products.Remove(remove);
+    await db.SaveChangesAsync();
+    return Results.Ok(remove);
     return Results.BadRequest("this is not the id you are looking for  - Obiwan Vidacovich");
 }).WithName("Delete Product");
 

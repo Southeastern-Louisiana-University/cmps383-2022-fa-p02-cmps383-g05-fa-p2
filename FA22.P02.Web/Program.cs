@@ -72,6 +72,27 @@ app.MapPost("/api/products/update", async (Product idea, ProductDb db) =>
     return Results.BadRequest("this is not the id you are looking for  - Obiwan Vidacovich");
 }).WithName("Update");
 
+app.MapPut("/api/products/{id}", async (int id, Product pro, ProductDb db) =>
+{
+    var todo = await db.Products.FindAsync(id);
+
+    if (todo is null) return Results.NotFound();
+
+    if ((todo.Name.Length < 120) && (todo.Description != null) && (todo.Price != null) && (todo.Price > 0))
+    {
+        todo.Name = pro.Name;
+        todo.Description = pro.Description;
+        todo.Price = pro.Price;
+        await db.SaveChangesAsync();
+        return Results.Ok(todo);
+    }
+
+
+
+
+    return Results.BadRequest();
+});
+
 
 app.MapGet("/api/products", async (ProductDb db) =>
 { 
@@ -93,7 +114,7 @@ app.MapGet("/api/products", async (ProductDb db) =>
     
 }).WithName("Get All Products");
 
-app.MapPost("/api/products/post", async (Product prod, ProductDb db) =>
+app.MapPost("/api/products", async (Product prod, ProductDb db) =>
 {
     if (((prod.Id > 0) && (prod.Name != null) && (prod.Description != null) && (prod.Price > 0M)) && !(await db.Products.FindAsync(prod.Id) is Product loose))
     {
@@ -105,7 +126,7 @@ app.MapPost("/api/products/post", async (Product prod, ProductDb db) =>
     return Results.BadRequest();
 }).WithName("Create New Product");
 
-app.MapDelete("/api/products/remove", async (int id, ProductDb db) =>
+app.MapDelete("/api/products", async (int id, ProductDb db) =>
 {
     if (await db.Products.FindAsync(id) is Product remove)
     {
